@@ -24,8 +24,6 @@ dependencies:
 - liquidhaskell
 - stm
 - effect-sessions
-- effect-monad
-- type-level-sets
 
 ghc-options:
 - -fplugin=LiquidHaskell
@@ -42,13 +40,5 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -fplugin=LiquidHaskell
-    default-language: Haskell2010
     dependencies:
     - main
-    build-depends:
-        liquid-base,
-        liquidhaskell,
-        stm,
-        effect-sessions,
-        effect-monad,
-        type-level-sets

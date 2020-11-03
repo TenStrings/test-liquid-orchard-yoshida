@@ -3,7 +3,7 @@ version:                1.0
 synopsis:               Sessions and session types for Concurrent Haskell
 description:		Provides an implementation of sessions ontop
                         of Concurrent Haskell, where session types are
-			effect types via effect-monad. 
+                        effect types via effect-monad. 
 
 copyright:              2015 Imperial College London
 author:                 Dominic Orchard, Nobuko Yoshida
@@ -21,9 +21,7 @@ exposed-modules:        Control.Effect.Sessions.Process,
 build-depends:          liquid-base,
                         liquidhaskell,
                         ghc-prim,
-                        effect-monad,
-			stm > 2.4, 
- 			type-level-sets
+                        stm > 2.4 
 
 
 --  ghc-options:          -fglasgow-exts

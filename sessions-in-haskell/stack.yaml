@@ -24,10 +24,6 @@ user-message: |
 # resolver: https://example.com/snapshots/2018-01-01.yaml
 resolver: nightly-2020-10-03
 
-extra-deps:
-- '../effect-monad'
-- '../type-level-sets'
-
 
 # User packages to be built.
 # Various formats can be used as shown in the example below.

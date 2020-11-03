@@ -1,8 +1,6 @@
 packages:
 - .
 - 'sessions-in-haskell'
-- 'effect-monad'
-- 'type-level-sets'
 
 extra-deps:
 - text-format-0.3.2

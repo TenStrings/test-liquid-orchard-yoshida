@@ -47,11 +47,5 @@ divClient (c :: Chan (Op "c")) (d :: (Chan (Op "d"))) =
 
 divProc = new $ \(c, c') -> new $ \(d, d') -> divServer c d `par` divClient c' d'
 
--- unsafe :: GT 0
--- unsafe = G 1
-
--- zerofail :: GT 0
--- unsafe = G 0
-
 -- nonzero:: NonZero
 -- nonzero = NZ 0
