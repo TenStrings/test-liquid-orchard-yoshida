@@ -23,7 +23,6 @@ dependencies:
 - liquid-base
 - liquidhaskell
 - stm
-- effect-sessions
 
 ghc-options:
 - -fplugin=LiquidHaskell
@@ -36,9 +35,9 @@ executables:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    - -threaded
     - -fplugin=LiquidHaskell
     dependencies:
     - main

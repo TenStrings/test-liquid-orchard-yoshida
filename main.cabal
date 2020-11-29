@@ -25,6 +25,14 @@ source-repository head
 
 library
   exposed-modules:
+      Control.Effect
+      Control.Effect.Sessions
+      Control.Effect.Sessions.Operations
+      Control.Effect.Sessions.Process
+      Data.Type.FiniteMap
+      Data.Type.Set
+      EMonad
+      Fork
       Lib
   other-modules:
       Paths_main
@@ -32,8 +40,7 @@ library
       src
   ghc-options: -fplugin=LiquidHaskell
   build-depends:
-      effect-sessions
-    , liquid-base
+      liquid-base
     , liquidhaskell
     , stm
   default-language: Haskell2010
@@ -44,10 +51,9 @@ executable main-exe
       Paths_main
   hs-source-dirs:
       app
-  ghc-options: -fplugin=LiquidHaskell -threaded -rtsopts -with-rtsopts=-N -fplugin=LiquidHaskell
+  ghc-options: -fplugin=LiquidHaskell -rtsopts -with-rtsopts=-N -threaded -fplugin=LiquidHaskell
   build-depends:
-      effect-sessions
-    , liquid-base
+      liquid-base
     , liquidhaskell
     , main
     , stm
