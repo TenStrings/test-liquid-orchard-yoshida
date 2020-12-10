@@ -31,7 +31,6 @@ library
       Control.Effect.Sessions.Process
       Data.Type.FiniteMap
       Data.Type.Set
-      Fork
       Lib
   other-modules:
       Paths_main

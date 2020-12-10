@@ -55,11 +55,3 @@ divClient (c :: Chan (Op "c")) (d :: (Chan (Op "d"))) =
     putStrLn $ "result " ++ show answer
 
 divProc = new $ \(c, c') -> new $ \(d, d') -> divServer c d `par` divClient c' d'
-
--- this fails
--- nonzero:: NonZero
--- nonzero = NZ 0
-
--- this doesn't
--- nonzero :: NonZero
--- nonzero = NZ 1
