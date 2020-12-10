@@ -31,7 +31,3 @@ class Effect (m :: k -> * -> *) where
    x >> y = x >>= (\_ -> y)
 
 fail = undefined
-
-{-| Specifies subeffecting behaviour -}
-class Subeffect (m :: k -> * -> *) f g where
-    sub :: m f a -> m g a

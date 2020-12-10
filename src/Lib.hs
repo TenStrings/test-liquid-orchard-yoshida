@@ -39,19 +39,19 @@ divServer (c :: Chan (Ch "c")) (d :: (Chan (Ch "d"))) =
     (NZ y) <- recv c
     send d (x `div` y)
 
-divClient ::
-  Chan ( 'Op "c") ->
-  Chan ( 'Op "d") ->
-  Process
-    '[ 'Op "c" 'Control.Effect.Sessions.:-> (Int ':! (NonZero ':! 'End)),
-       'Op "d" 'Control.Effect.Sessions.:-> (Int ':? 'End)
-     ]
-    ()
+-- divClient ::
+--   Chan ( 'Op "c") ->
+--   Chan ( 'Op "d") ->
+--   Process
+--     '[ 'Op "c" 'Control.Effect.Sessions.:-> (Int ':! (NonZero ':! 'End)),
+--        'Op "d" 'Control.Effect.Sessions.:-> (Int ':? 'End)
+--      ]
+--     ()
 divClient (c :: Chan (Op "c")) (d :: (Chan (Op "d"))) =
   do
     send c (2 :: Int)
     send c (NZ 0)
-    answer <- (recv d :: Process _ Int)
+    answer <- recv d
     putStrLn $ "result " ++ show answer
 
 divProc = new $ \(c, c') -> new $ \(d, d') -> divServer c d `par` divClient c' d'

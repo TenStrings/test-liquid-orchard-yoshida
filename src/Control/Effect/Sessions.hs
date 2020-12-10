@@ -22,16 +22,6 @@ module Control.Effect.Sessions
     recv,
     new,
     par,
-    rsend,
-    chSend,
-    chRecv,
-    chRecvSeq,
-    sub,
-    subL,
-    subR,
-    subEnd,
-    affineFix,
-    caseUnion,
     print,
     putStrLn,
     liftIO,
@@ -45,5 +35,3 @@ import Control.Effect.Sessions.Process
 import Data.Type.FiniteMap
 import GHC.TypeLits
 import Prelude hiding (Monad (..), print, putStrLn)
-
-chRecvSeq c k = (chRecv c) >>= (\kf -> kf k)
