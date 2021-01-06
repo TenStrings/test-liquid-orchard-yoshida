@@ -42,12 +42,12 @@ putStrLn = liftIO . Prelude.putStrLn
 -- send or receive action (terminated by 'End').
 
 {-| Send a primitive-typed value -}
-send :: Chan c -> Int -> Process '[c :-> Int :! End] ()
-send (MkChan c) t = Process $ C.writeChan c t 
+send :: Chan c -> t -> Process '[c :-> t :! End] ()
+send (MkChan c) t = Process $ C.writeChan (unsafeCoerce c) t 
 
 {-| Receive a primitive-typed value -}
-recv :: Chan c -> Process '[c :-> Int :? End] Int
-recv (MkChan c) = Process $ C.readChan c
+recv :: Chan c -> Process '[c :-> t :? End] t
+recv (MkChan c) = Process $ C.readChan (unsafeCoerce c)
 
 -- The 'new' combinator models $\nu$,  which takes
 -- a function mapping from a pair of two channels names

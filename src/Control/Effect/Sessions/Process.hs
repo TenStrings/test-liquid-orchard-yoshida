@@ -123,7 +123,7 @@ type family SessionSeq s t where
 {-| Channel endpoint names -}
 data Name = Ch Symbol | Op Symbol
 {-| Namec channels, encapsulating Concurrent Haskell channels -}
-data Chan (n :: Name) = MkChan (C.Chan Int)
+data Chan (n :: Name) = forall a . MkChan (C.Chan a)
 
 -- Channel names can be compared as follows (this is needed for the normalisation
 -- procedure in the type-level finite maps library).
