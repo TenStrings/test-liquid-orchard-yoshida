@@ -26,6 +26,10 @@ module Control.Effect.Sessions
     putStrLn,
     liftIO,
     ifThenElse,
+    UnionSeq,
+    chSend, 
+    chRecv,
+    chRecvSeq
   )
 where
 
@@ -35,3 +39,5 @@ import Control.Effect.Sessions.Process
 import Data.Type.FiniteMap
 import GHC.TypeLits
 import Prelude hiding (Monad (..), print, putStrLn)
+
+chRecvSeq c k = (chRecv c) >>= (\kf -> kf k)

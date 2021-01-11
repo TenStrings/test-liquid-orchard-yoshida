@@ -21,6 +21,8 @@ import qualified Control.Concurrent as Conc
 import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
 
+import Control.Effect (Subeffect(..))
+
 {-| A process can be run if it is /closed/ (i.e., empty channel environment) -}
 run :: Process '[] a -> IO a
 run = getProcess
@@ -76,3 +78,64 @@ par (Process x) (Process y) =  Process $ do res <- newEmptyTMVarIO
 type family AllBal (env :: [Map Name Session]) :: [Map Name Session] where
             AllBal '[] = '[]
             AllBal ((c :-> s) ': env) = (c :-> Bal s) ': (AllBal env)
+
+
+{-| Send a channel 'd' over channel 'c' -}
+chSend :: Chan c -> Chan d -> Process '[c :-> (Delg s) :! End, d :-> Bal s] ()
+chSend (MkChan c) t = Process $ C.writeChan (unsafeCoerce c) t
+
+{-| Receive a channel over a channel 'c', bind to the name 'd' -}
+chRecv :: Chan c -> Process '[c :-> (Delg (env :@ d)) :? End]
+                        ((Chan d -> Process env a) -> Process (env :\ d) a)
+chRecv (MkChan c) = Process $ return $
+                               \f -> let y = (C.readChan (unsafeCoerce c) >>=
+                                                     (getProcess . f . unsafeCoerce))
+                                     in Process $ y
+
+
+instance Subeffect Process env env' =>
+         Subeffect Process ((c :-> s) ': env) ((c :-> s :+ t) ': env') where
+    sub (Process p) = Process p
+
+instance Subeffect Process env env' =>
+         Subeffect Process ((c :-> t) ': env) ((c :-> s :+ t) ': env') where
+    sub (Process p) = Process p
+
+instance Subeffect Process env env where
+    sub = id
+
+instance Subeffect Process env env' =>
+         Subeffect Process ((c :-> s) ': env) ((c :-> s) ': env') where
+    sub (Process p) = Process p
+
+instance Subeffect Process env env' =>
+         Subeffect Process env ((c :-> End) ': env') where
+    sub (Process p) = Process p
+
+{-| Explicit subeffecting introduction of ':+' with the current session behaviour on the left -}
+subL :: Process '[c :-> s] a -> Process '[c :-> s :+ t] a
+subL = sub
+
+{-| Explicit subeffecting introduction of ':+' with the current session behaviour on the right -}
+subR :: Process '[c :-> t] a -> Process '[c :-> s :+ t] a
+subR = sub
+
+{-| Explicit subeffecting introduction of a terminated session for channel 'c' -}
+subEnd :: Chan c -> Process '[] a -> Process '[c :-> End] a
+subEnd _ = sub
+
+instance Subeffect Process '[] '[d :-> s] where
+    sub (Process p) = Process p
+
+caseUnion :: Chan c -> Process env a -> Process ((c :-> s) ': env) a
+caseUnion _ (Process p) = Process p
+
+{-| Recursion combinator for recursive functions which have an affine fixed-point
+    equation on their effects.
+      For example, if 'h ~ (Seq h a) :+ b' then 'ToFix h = Fix a b,'
+   -}
+affineFix :: ((a -> Process '[c :-> Star] b)
+          -> (a -> Process '[c :-> h] b))
+          -> a -> Process '[c :-> ToFix h] b
+affineFix f x = let (Process p) = f (\x' -> let (Process y) = affineFix f x' in Process y) x
+                 in Process p

@@ -145,6 +145,7 @@ type family CmpSessionMap (x :: Map Name Session) (y :: Map Name Session)  where
 
 type UnionSeq s t = Union s t -- to remind us that the `union' is more like
                          -- sequential composition
+
 instance Effect Process where
    type Plus Process s t = UnionSeq s t
    type Unit Process     = '[]
@@ -204,3 +205,41 @@ type family (BalancedParF s t) :: Constraint where
                   BalancedParF (c :-> Int :! (s :*! t)) ((c :-> Int :! (s' :*! t')) ': env)
                                                                  = (s ~ s', t ~ t')
                   BalancedParF (c :-> s) ((d :-> t) ': env)       = (BalancedParF (c :-> s) env)
+
+
+{-| Normalises session types using the left-distributivity
+     rule for effects: i.e. f * (g + h) = (f * g) + (f * h) -}
+type family DistribL g where
+            DistribL (a :! (s :+ t)) = (DistribL (a :! s)) :+ (DistribL (a :! t))
+            DistribL (a :? (s :+ t)) = (DistribL (a :? s)) :+ (DistribL (a :? t))
+            DistribL (a :? s) = DistribInsideSeq ((:?) a) (DistribL s)
+            DistribL (a :! s) = DistribInsideSeq ((:!) a) (DistribL s)
+            DistribL (a :+ b) = (DistribL a) :+ (DistribL b)
+            DistribL Star = Star
+            DistribL End = End
+
+{-| Part of the normalisation procedure for left-distributivity -}
+type family DistribInsideSeq (k :: Session -> Session) (a :: Session) :: Session where
+            DistribInsideSeq k (s :+ t) = (k s) :+ (k t)
+            DistribInsideSeq k s        = k s
+
+{-| Map an affine equation on effects to the fixed point solution:
+   That is '(Seq Star a) :+ b' where 'Star' is the placeholder for a recursion variable
+    then 'ToFix ((Seq Star a) :+ b) = Fix a b' -}
+type ToFix s = ToFixP (DistribL s)
+
+type family ToFixPP (a :: Session) (a' :: Session) (b :: Session) (b' :: Session) :: Session where
+            ToFixPP a (t :! s) b b' = ToFixPP a s b b'
+            ToFixPP a (t :? s) b b' = ToFixPP a s b b'
+            ToFixPP a End      b b' = ToFixPP b b' a End
+            ToFixPP a Star b b'     = Fix a b
+            ToFixPP a a' b Star     = Fix b a
+
+type family ToFixP s where
+            ToFixP (a :+ b) = ToFixPP a a b b
+            ToFixP s        = ToFixPP s s End End
+
+
+type family ToFixes (env :: [Map Name Session]) :: [Map Name Session] where
+            ToFixes '[] = '[]
+            ToFixes ((c :-> v) ': env) = (c :-> ToFix v) ': env
