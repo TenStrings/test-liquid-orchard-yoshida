@@ -26,12 +26,12 @@ packages:
   original:
     hackage: liquid-fixpoint-0.8.10.2
 - completed:
-    hackage: liquidhaskell-0.8.10.1@sha256:ee74a1f715de67d649804fcfe0478e87b7940a84c43cda1bdbd0c235f701fd2a,15722
+    hackage: liquidhaskell-0.8.10.2@sha256:fc79e92fc4de0aec47965e457915ef7a5be9fd1d3ec1d3a681a9909f5286bf8f,15777
     pantry-tree:
-      size: 69381
-      sha256: accdcfe6a7df376c9ac99b6e71c0fe5534a504d6fb0756ceae05b9121be979f2
+      size: 69560
+      sha256: c8bb733484e14ae2ca10a4cb726701f52258e170b246d5f378cbc642bc1d0082
   original:
-    hackage: liquidhaskell-0.8.10.1
+    hackage: liquidhaskell-0.8.10.2
 - completed:
     hackage: liquid-base-4.14.1.0@sha256:5df5cf52b893238e243b48ee647389caa81fbb838c9de26691ded4a3f091c5a3,9066
     pantry-tree:

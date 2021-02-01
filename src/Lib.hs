@@ -18,7 +18,9 @@ module Lib where
 import qualified Control.Concurrent.Chan       as C
 import           Control.Effect.Sessions
 import           Data.Type.Set           hiding ( (:->) )
-import           GHC.Exts                       ( Constraint )
+import           GHC.Exts                       ( Constraint
+                                                , IsString
+                                                )
 import           GHC.TypeLits
 import           Unsafe.Coerce
 import           Prelude                 hiding ( Monad(..)
@@ -28,11 +30,12 @@ import           Prelude                 hiding ( Monad(..)
                                                 )
 import qualified Prelude                       as P
 
-mainFunc =
-  run $
+mainFunc = run $ do
   -- divProc >>
   -- simpleDelg >>
-  repProc
+  -- repProc >>
+  gtProc
+
 
 data NonZero = NZ Int deriving (Show)
 
@@ -53,9 +56,11 @@ divClient (c :: Chan (Op "c")) (d :: (Chan (Op "d"))) = do
 divProc =
   new $ \(c, c') -> new $ \(d, d') -> divServer c d `par` divClient c' d'
 
-serverD :: _ -> _
+-- Delegation
+
+-- serverD :: _ -> _
 serverD (c :: (Chan (Ch "c"))) = do
-  chRecvSeq c (\(d :: Chan (Ch "x")) -> send d (NZ 1))
+  chRecvSeq c (\(d :: Chan (Ch "x")) -> send d (NZ 0))
 
 clientD (c :: Chan (Op "c")) = new
   (\(d :: (Chan (Ch "d")), d') -> do
@@ -66,7 +71,7 @@ clientD (c :: Chan (Op "c")) = new
 
 simpleDelg = new $ \(c, c') -> serverD c `par` clientD c'
 
---- Recursive
+-- Recursive
 
 repInp c p = affineFix
   (\f -> \() -> do
@@ -88,11 +93,36 @@ serverA (c :: (Chan (Ch "c"))) = repInp
   )
 
 -- clientA :: _ -> _
-clientA (c :: (Chan (Op "c"))) = new (\(d :: Chan (Ch "d"), d') ->
-  do
+clientA (c :: (Chan (Op "c"))) = new
+  (\(d :: Chan (Ch "d"), d') -> do
     send c (1 :: Int)
     rsend c d
     send d' (NZ 0)
-    send c (0 :: Int))
+    send c  (0 :: Int)
+  )
 
-repProc = new $ \(c, c') -> do (serverA c) `par` (clientA c')
+repProc = new $ \(c, c') -> do
+  (serverA c) `par` (clientA c')
+
+-- Exp
+
+gtServer (c :: Chan (Ch "c")) (d :: (Chan (Ch "d"))) = do
+  (TN x) <- recv c
+  (TN y) <- recv c
+  send d $ NZ (x - y)
+
+gtClient (c :: Chan (Op "c")) (d :: (Chan (Op "d"))) = do
+  send c $ miunsafe2
+  send c $ miunsafe2
+  answer <- recv d
+  putStrLn $ "result " ++ show answer
+
+gtProc = new $ \(c, c') -> new $ \(d, d') -> gtServer c d `par` gtClient c' d'
+
+-- THIS SHOULD BE UNSAFE
+miunsafe2 :: TaggedN 1
+miunsafe2 = TN 1
+
+data TaggedN (n :: Nat) = TN Int
+
+{-@ TN :: forall (n :: Symbol). {v:Int | n ~~ v } -> TaggedN n @-}
