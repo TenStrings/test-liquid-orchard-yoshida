@@ -105,23 +105,63 @@ repProc = new $ \(c, c') -> do
   (serverA c) `par` (clientA c')
 
 -- Exp
+{- 
+  try to check that two different values sent/received are different
+  current status: FAIL
+-}
 
+-- this won't parse, so it is not possible to add refinements this way inside
+-- the list/maps 
+-- TODO: check if it is possible to reflect on some type-level functions in any
+-- case, though, it should fail anyway without any refinements, as it should be
+-- obvious that x == y so we get NZ 0
+-- 
+-- {-@ gtServer
+--   :: Chan ('Ch _)
+--      -> Chan ('Ch _)
+--      -> Process
+--           '[ 'Ch _ 'Control.Effect.Sessions.:-> (Int ':? (Int ':? 'End)),
+--              'Ch _ 'Control.Effect.Sessions.:-> (NonZero ':! 'End)]
+--           ()
+-- @-}
+gtServer
+  :: Chan ('Ch "c")
+     -> Chan ('Ch "d")
+     -> Process
+          '[ 'Ch "c" 'Control.Effect.Sessions.:-> (Int ':? (Int ':? 'End)),
+             'Ch "d" 'Control.Effect.Sessions.:-> (NonZero ':! 'End)]
+          ()
 gtServer (c :: Chan (Ch "c")) (d :: (Chan (Ch "d"))) = do
-  (TN x) <- recv c
-  (TN y) <- recv c
+  x <- recv c
+  y <- recv c
   send d $ NZ (x - y)
 
+gtClient
+  :: (Num t1, Num t2, Show a) =>
+     Chan ('Op "c")
+     -> Chan ('Op "d")
+     -> Process
+          '[ 'Op "c" 'Control.Effect.Sessions.:-> (t1 ':! (t2 ':! 'End)),
+             'Op "d" 'Control.Effect.Sessions.:-> (a ':? 'End)]
+          ()
 gtClient (c :: Chan (Op "c")) (d :: (Chan (Op "d"))) = do
-  send c $ miunsafe2
-  send c $ miunsafe2
+  send c $ 1
+  send c $ 1
   answer <- recv d
   putStrLn $ "result " ++ show answer
 
 gtProc = new $ \(c, c') -> new $ \(d, d') -> gtServer c d `par` gtClient c' d'
 
--- THIS SHOULD BE UNSAFE
-miunsafe2 :: TaggedN 1
-miunsafe2 = TN 1
+-- a different way of adding the refinements would be by using new-types/type
+-- wrappers, and add the predicates there, but for some reason my tests 
+-- for some reason, though, this stops working when I try to use with the
+-- session even when it can verify that:
+-- two :: TaggedN 1
+-- two = TN 2
+-- is unsafe
+
+one :: TaggedN 1
+one = TN 1
 
 data TaggedN (n :: Nat) = TN Int
 
