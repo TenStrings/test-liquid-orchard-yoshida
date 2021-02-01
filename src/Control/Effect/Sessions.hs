@@ -29,7 +29,12 @@ module Control.Effect.Sessions
     UnionSeq,
     chSend, 
     chRecv,
-    chRecvSeq
+    chRecvSeq,
+    subEnd,
+    subL,
+    subR,
+    affineFix,
+    rsend,
   )
 where
 

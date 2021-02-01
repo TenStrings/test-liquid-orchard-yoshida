@@ -139,3 +139,7 @@ affineFix :: ((a -> Process '[c :-> Star] b)
           -> a -> Process '[c :-> ToFix h] b
 affineFix f x = let (Process p) = f (\x' -> let (Process y) = affineFix f x' in Process y) x
                  in Process p
+
+{-| Output a channel (dual to a replicated input) -}
+rsend :: Chan c -> Chan d -> Process '[c :-> (Delg s) :*! End, d :-> Bal s] ()
+rsend (MkChan c) t = Process $ C.writeChan (unsafeCoerce c) t
